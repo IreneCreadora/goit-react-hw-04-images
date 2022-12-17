@@ -23,7 +23,7 @@ function App() {
   useEffect(() => {
     if (!searchQuery) return;
 
-    getImages();
+    getImages;
   }, [searchQuery]);
 
   const onChangeQuery = searchQuery => {
