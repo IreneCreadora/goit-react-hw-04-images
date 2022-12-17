@@ -23,7 +23,7 @@ function App() {
   useEffect(() => {
     if (!searchQuery) return;
 
-    getImages;
+    getImages();
   }, [searchQuery]);
 
   const onChangeQuery = searchQuery => {
@@ -44,7 +44,7 @@ function App() {
 
       setImages(prev => [...prev, ...hits]);
 
-      setPage(prev => prev + 1);
+      setPage(prevPage => prevPage + 1);
 
       if (currentPage !== 1) {
         scrollOnLoadButton();
