@@ -1,9 +1,8 @@
-import { Component } from 'react';
+import { useState, useEffect } from 'react';
 import { InfinitySpin } from 'react-loader-spinner';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import toastParams from '../helpers/ToastParams';
-import pixabayAPI from 'API/pixabayAPI';
 import '../components/styles.css';
 
 import Searchbar from './searchBar/SearchBar';
@@ -11,107 +10,94 @@ import ImageGallery from './imageGallery/ImageGallery';
 import Button from './button/Button';
 import Modal from './modal/Modal';
 
-class App extends Component {
-  state = {
-    images: [],
-    currentPage: 1,
-    searchQuery: '',
-    isLoading: false,
-    showModal: false,
-    largeImage: '',
-    error: null,
+import pixabayAPI from 'API/pixabayAPI';
+function App() {
+  const [images, setImages] = useState([]);
+  const [currentPage, setPage] = useState(1);
+  const [searchQuery, setQuery] = useState('');
+  const [isLoading, setLoading] = useState(false);
+  const [showModal, setModal] = useState(false);
+  const [largeImage, setlargeImage] = useState('');
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (!searchQuery) return;
+
+    getImages();
+  }, [searchQuery]);
+
+  const onChangeQuery = searchQuery => {
+    setImages([]);
+    setPage(1);
+    setQuery(searchQuery);
+    setLoading(false);
+    setModal(false);
+    setlargeImage('');
+    setError(null);
   };
 
-  componentDidUpdate(prevProps, prevState) {
-    if (prevState.searchQuery !== this.state.searchQuery) {
-      this.getImages();
-    }
-  }
-
-  onChangeQuery = searchQuery => {
-    this.setState({
-      images: [],
-      currentPage: 1,
-      searchQuery: searchQuery,
-      error: null,
-    });
-  };
-
-  getImages = async () => {
-    const { currentPage, searchQuery } = this.state;
-
-    this.setState({
-      isLoading: true,
-    });
+  const getImages = async () => {
+    setLoading(true);
 
     try {
       const { hits } = await pixabayAPI(searchQuery, currentPage);
 
-      this.setState(prevState => ({
-        images: [...prevState.images, ...hits],
-        currentPage: prevState.currentPage + 1,
-      }));
+      setImages(prev => [...prev, ...hits]);
+
+      setPage(prev => prev + 1);
 
       if (currentPage !== 1) {
-        this.scrollOnLoadButton();
+        scrollOnLoadButton();
       }
     } catch (error) {
-      this.setState({ error });
+      setError({ error });
     } finally {
-      this.setState({
-        isLoading: false,
-      });
+      setLoading(false);
     }
   };
 
-  clickOnImage = fullImageUrl => {
+  const clickOnImage = fullImageUrl => {
     console.log(fullImageUrl);
-    this.setState({ largeImage: fullImageUrl });
-    this.toggleModal();
+    setlargeImage(fullImageUrl);
+    setModal(true);
   };
 
-  toggleModal = () => {
-    this.setState(prevState => ({
-      showModal: !prevState.showModal,
-      // largeImage: '',
-    }));
+  const toggleModal = () => {
+    setModal(prev => !prev);
   };
 
-  scrollOnLoadButton = () => {
+  const scrollOnLoadButton = () => {
     window.scrollTo({
       top: document.documentElement.scrollHeight,
       behavior: 'smooth',
     });
   };
 
-  render() {
-    const { images, isLoading, showModal, largeImage, error } = this.state;
-    const needShowLoadMore = images.length > 0 && images.length >= 12;
+  const needShowLoadMore = images.length > 0 && images.length >= 12;
 
-    return (
-      <>
-        <Searchbar onSubmit={this.onChangeQuery} />
-        <ToastContainer position="center" autoClose={2000} />
+  return (
+    <>
+      <Searchbar onSubmit={onChangeQuery} />
+      <ToastContainer position="center" autoClose={2000} />
 
-        <ImageGallery images={images} onImageClick={this.clickOnImage} />
+      <ImageGallery images={images} onImageClick={clickOnImage} />
 
-        {needShowLoadMore && <Button onClick={this.getImages} />}
+      {needShowLoadMore && <Button onClick={getImages} />}
 
-        {showModal && (
-          <Modal onClose={this.toggleModal}>
-            <img src={largeImage} alt="" />
-          </Modal>
+      {showModal && (
+        <Modal onClose={toggleModal}>
+          <img src={largeImage} alt="" />
+        </Modal>
+      )}
+      {isLoading && <InfinitySpin width="200" color="#4fa94d" />}
+
+      {error &&
+        toast.error(
+          'Sorry, something went wrong. Please try again',
+          toastParams
         )}
-        {isLoading && <InfinitySpin width="200" color="#4fa94d" />}
-
-        {error &&
-          toast.error(
-            'Sorry, something went wrong. Please try again',
-            toastParams
-          )}
-      </>
-    );
-  }
+    </>
+  );
 }
 
 export default App;
