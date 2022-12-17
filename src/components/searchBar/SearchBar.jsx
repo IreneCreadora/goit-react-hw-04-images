@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { useState } from 'react';
 import propTypes from 'prop-types';
 
 import { toast } from 'react-toastify';
@@ -7,56 +7,51 @@ import toastParams from 'helpers/ToastParams';
 
 import '../styles.css';
 
-class Searchbar extends Component {
-  static defaultProps = { onSubmit: null };
+const Searchbar = ({ onSubmit }) => {
+  const [currentQuery, setCurrentQuery] = useState('');
 
-  static propTypes = {
-    onSubmit: propTypes.func.isRequired,
+  const handleInputChange = e => {
+    const { value } = e.currentTarget;
+    setCurrentQuery(value);
   };
 
-  state = {
-    searchQuery: '',
-  };
-
-  handleInputChange = e => {
-    const { name, value } = e.currentTarget;
-    this.setState({ [name]: value });
-  };
-
-  handleSubmit = e => {
+  const handleSubmit = e => {
     e.preventDefault();
+    const normalizeQuery = currentQuery.trim().toLowerCase();
 
-    const { searchQuery } = this.state;
-    const normalizeSearchQuery = searchQuery.trim().toLowerCase();
-
-    if (!normalizeSearchQuery || normalizeSearchQuery === '') {
+    if (!normalizeQuery || normalizeQuery === '') {
       toast.error('🦄Lets start the search', toastParams);
+      return;
     }
 
-    this.props.onSubmit(normalizeSearchQuery);
+    onSubmit(normalizeQuery);
+    resetForm();
   };
 
-  render() {
-    return (
-      <header className="Searchbar">
-        <form className="SearchForm" onSubmit={this.handleSubmit}>
-          <button type="submit" className="SearchForm-button">
-            <span className="SearchForm-button-label">Search</span>
-          </button>
-          <input
-            className="SearchForm-input"
-            type="text"
-            name="searchQuery"
-            autoComplete="off"
-            autoFocus
-            placeholder="Search images and photos"
-            value={this.state.searchQuery}
-            onChange={this.handleInputChange}
-          />
-        </form>
-      </header>
-    );
-  }
-}
+  const resetForm = () => setCurrentQuery('');
 
+  return (
+    <header className="Searchbar">
+      <form className="SearchForm" onSubmit={handleSubmit}>
+        <button type="submit" className="SearchForm-button">
+          <span className="SearchForm-button-label">Search</span>
+        </button>
+        <input
+          className="SearchForm-input"
+          type="text"
+          name="currentQuery"
+          autoComplete="off"
+          autoFocus
+          placeholder="Search images and photos"
+          value={currentQuery}
+          onChange={handleInputChange}
+        />
+      </form>
+    </header>
+  );
+};
+
+Searchbar.propTypes = {
+  onSubmit: propTypes.func.isRequired,
+};
 export default Searchbar;

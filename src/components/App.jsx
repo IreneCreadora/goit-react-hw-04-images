@@ -24,12 +24,13 @@ function App() {
     if (!searchQuery) return;
 
     getImages();
+    // eslint-disable-next-line
   }, [searchQuery]);
 
-  const onChangeQuery = searchQuery => {
+  const onChangeQuery = currentQuery => {
     setImages([]);
     setPage(1);
-    setQuery(searchQuery);
+    setQuery(currentQuery);
     setLoading(false);
     setModal(false);
     setlargeImage('');
