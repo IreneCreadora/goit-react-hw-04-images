@@ -19,8 +19,14 @@ const pixabayAPI = async (searchQuery, currentPage) => {
 
   const { data } = await axios.get(`/api/?`, options);
   console.log(data);
-
-  return data;
+  const images = data.hits.map(({ id, tags, webformatURL, largeImageURL }) => ({
+    id,
+    tags,
+    webformatURL,
+    largeImageURL,
+  }));
+  const totalPages = Math.ceil(data.totalHits / options.params.per_page);
+  return { images, totalPages };
 };
 
 export default pixabayAPI;

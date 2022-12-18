@@ -14,6 +14,7 @@ import pixabayAPI from 'API/pixabayAPI';
 function App() {
   const [images, setImages] = useState([]);
   const [currentPage, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
   const [searchQuery, setQuery] = useState('');
   const [isLoading, setLoading] = useState(false);
   const [showModal, setModal] = useState(false);
@@ -30,10 +31,9 @@ function App() {
   const onChangeQuery = currentQuery => {
     setImages([]);
     setPage(1);
+    setTotalPages(0);
     setQuery(currentQuery);
     setLoading(false);
-    setModal(false);
-    setlargeImage('');
     setError(null);
   };
 
@@ -41,10 +41,10 @@ function App() {
     setLoading(true);
 
     try {
-      const { hits } = await pixabayAPI(searchQuery, currentPage);
+      const { images, totalPages } = await pixabayAPI(searchQuery, currentPage);
 
-      setImages(prev => [...prev, ...hits]);
-
+      setImages(prev => [...prev, ...images]);
+      setTotalPages(totalPages);
       setPage(prevPage => prevPage + 1);
 
       if (currentPage !== 1) {
@@ -74,7 +74,7 @@ function App() {
     });
   };
 
-  const needShowLoadMore = images.length > 0 && images.length >= 12;
+  const needShowLoadMore = totalPages && currentPage !== totalPages;
 
   return (
     <>
